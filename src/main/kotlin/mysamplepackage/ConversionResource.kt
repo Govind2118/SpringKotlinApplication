@@ -2,34 +2,29 @@ package mysamplepackage
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.springframework.context.annotation.Bean
-import org.springframework.http.ResponseEntity
+import com.google.inject.Guice
+import controllers.ConversionController
+import controllers.DemoApplicationModule
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
-import javax.ws.rs.NotFoundException
 import javax.ws.rs.Produces
 
 @RestController
 class ConversionResource {
 
-    @Bean
-    fun getRestTemplate(): RestTemplate? {
-        return RestTemplate()
-    }
+    private val injector = Guice.createInjector(DemoApplicationModule())
+    private val conversionController = injector.getInstance(ConversionController::class.java)
 
     @GetMapping("/fetch/coin-to-usd/{currency1}/{currency2}")
     @Produces("application/json")
-    fun fetchConversionRate(
+    suspend fun fetchConversionRate(
             @PathVariable("currency1") currency1: String,
             @PathVariable("currency2") currency2: String
-    ): String {
-        val coinGeckoDataUrl = "https://api.coingecko.com/api/v3/coins/${currency1}?localization=false&tickers=true&market_data=true&community_data=false&developer_data=false&sparkline=false"
-        val restTemplate = getRestTemplate() ?: throw NotFoundException("Failed to initialize rest template.");
-        val response: ResponseEntity<CoinDetails> = restTemplate.getForEntity(coinGeckoDataUrl, CoinDetails::class.java)
-        val coinDetails = response.body;
-        return coinDetails?.marketData?.currentPrice?.usdValue?.toString() ?: "Price not found!"
+    ): String = withContext(Dispatchers.IO) {
+        conversionController.getStringifiedConversionRate(currency1, currency2)
     }
 
 }

@@ -23,7 +23,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("javax.ws.rs:javax.ws.rs-api:2.0")
     implementation("com.google.inject:guice:4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:2.3.12.RELEASE")
     runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
