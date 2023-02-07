@@ -12,7 +12,9 @@ import javax.ws.rs.NotFoundException
 
 class ConversionController {
 
-    /* Fetches conversion rate using CoinGecko's free API for market data. */
+    /* Fetches conversion rate using CoinGecko's free API for market data.
+    *  Example for currency1 - bitcoin, currency2Ticker - usd
+    * */
     suspend fun getStringifiedConversionRate(
             currency1: String,
             currency2Ticker: String
