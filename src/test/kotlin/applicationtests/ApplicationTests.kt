@@ -1,5 +1,6 @@
 package applicationtests
 
+import com.example.repository.VariableRepository
 import com.example.resources.ConversionResource
 import com.example.services.ConversionService
 import io.mockk.coEvery
@@ -35,12 +36,17 @@ class ApplicationTests {
     }
 
     @Test
-    fun `get variable returns stored value`() {
-        every { conversionService.getVariable("threshold") } returns 1.5
+    fun `get variable returns persisted value`() {
+        every { conversionService.getVariable("threshold") } returns VariableRepository.StoredVariable(
+            name = "threshold",
+            value = 1.5,
+            updatedAt = Instant.parse("2026-01-01T00:00:00Z")
+        )
 
         val actual = resource.getVariable("threshold")
 
         assertEquals("threshold", actual.name)
         assertEquals(1.5, actual.value)
+        assertEquals(Instant.parse("2026-01-01T00:00:00Z"), actual.updatedAt)
     }
 }

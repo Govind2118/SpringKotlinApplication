@@ -1,14 +1,15 @@
 package com.example.cache
 
+import com.example.config.AppProperties
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.stereotype.Component
-import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
 @Component
-class CoinDetailsCache {
-    private val ttl: Duration = Duration.ofMinutes(2)
+class CoinDetailsCache(
+    private val appProperties: AppProperties
+) {
     private val cache = ConcurrentHashMap<String, CacheEntry>()
 
     fun get(coinId: String): CacheHit? {
@@ -25,7 +26,7 @@ class CoinDetailsCache {
         cache[coinId] = CacheEntry(
             payload = payload,
             cachedAt = now,
-            expiresAt = now.plus(ttl)
+            expiresAt = now.plus(appProperties.cacheTtl)
         )
         return CacheHit(payload, false, now)
     }

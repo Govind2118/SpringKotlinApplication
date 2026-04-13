@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS variables (
+    name VARCHAR(100) PRIMARY KEY,
+    variable_value DOUBLE PRECISION NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS quote_audit (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    coin_id VARCHAR(100) NOT NULL,
+    target_currency VARCHAR(20) NOT NULL,
+    rate DECIMAL(19,8) NOT NULL,
+    cached BOOLEAN NOT NULL,
+    fetched_at TIMESTAMP NOT NULL
+);
