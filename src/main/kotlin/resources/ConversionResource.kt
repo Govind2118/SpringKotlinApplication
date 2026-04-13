@@ -1,28 +1,35 @@
-package resources
+package com.example.resources
 
-import com.google.inject.Guice
-import controllers.ConversionController
-import controllers.TestApplicationModule
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.example.services.ConversionService
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import javax.ws.rs.Produces
+import java.math.BigDecimal
 
 @RestController
-class CoinConversionResource {
+class ConversionResource(
+    private val conversionService: ConversionService
+) {
 
-    private val injector = Guice.createInjector(TestApplicationModule())
-    private val conversionController = injector.getInstance(ConversionController::class.java)
-
-    @GetMapping("/fetch/coin-to-usd/{currency1}/{currency2Ticker}")
-    @Produces("application/json")
+    @GetMapping(
+        value = ["/fetch/conversion/{currency1}/{currency2Ticker}"],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
     suspend fun fetchConversionRate(
-            @PathVariable("currency1") currency1: String,
-            @PathVariable("currency2Ticker") currency2Ticker: String
-    ): String = withContext(Dispatchers.IO) {
-        conversionController.getStringifiedConversionRate(currency1, currency2Ticker)
-    }
+        @PathVariable("currency1") currency1: String,
+        @PathVariable("currency2Ticker") currency2Ticker: String
+    ): BigDecimal = conversionService.getConversionRate(currency1 = currency1, currency2Ticker = currency2Ticker)
 
+    @GetMapping(
+        value = ["/add-variable/{name}/{value}"],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    suspend fun addVariable(
+        @PathVariable("name") name: String,
+        @PathVariable("value") value: Double
+    ): Map<String, Any> {
+        conversionService.addVariable(name = name, value = value)
+        return mapOf("name" to name, "value" to value)
+    }
 }

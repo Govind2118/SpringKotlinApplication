@@ -1,45 +1,28 @@
-package controllers
+package com.example.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.springframework.context.annotation.Bean
-import org.springframework.http.ResponseEntity
-import org.springframework.web.client.RestTemplate
-import java.lang.Exception
-import javax.ws.rs.BadRequestException
-import javax.ws.rs.NotFoundException
+import com.fasterxml.jackson.databind.JsonNode
+import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.util.concurrent.ConcurrentHashMap
 
-class ConversionController {
+@Service
+class ConversionService(
+    private val coinGeckoClient: CoinGeckoClient
+) {
+    private val variables = ConcurrentHashMap<String, Double>()
 
-    /* Fetches conversion rate using CoinGecko's free API for market data.
-    *  Example for currency1 - bitcoin, currency2Ticker - usd
-    * */
-    suspend fun getStringifiedConversionRate(
-            currency1: String,
-            currency2Ticker: String
-    ): String {
-        val coinGeckoDataUrl = "https://api.coingecko.com/api/v3/coins/${currency1}?localization=false&tickers=true&market_data=true&community_data=false&developer_data=false&sparkline=false"
-        val restTemplate = getRestTemplate() ?: throw NotFoundException("Failed to initialize rest template.")
-        val response: ResponseEntity<String> = restTemplate.getForEntity(coinGeckoDataUrl, String::class.java)
-        val coinDetails = response.body ?: throw NotFoundException("Response body empty")
-        return getCurrentPriceFromResponse(currency2Ticker, coinDetails)
-    }
-
-    private fun getCurrentPriceFromResponse(
-            currency2Ticker: String,
-            coinDetails: String
-    ): String {
-        val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-        val node: ObjectNode = mapper.readValue(coinDetails, ObjectNode::class.java)
-        val value = try {
-            node.get("market_data").get("current_price").get(currency2Ticker)
-        } catch (e: Exception) {
-            throw BadRequestException("Ticker $currency2Ticker not found, error: ${e.message}")
+    suspend fun getConversionRate(currency1: String, currency2Ticker: String): BigDecimal {
+        val coinDetails = coinGeckoClient.fetchCoinDetails(currency1 = currency1)
+        val valueNode = coinDetails.at("/market_data/current_price/${currency2Ticker.lowercase()}")
+        if (valueNode.isMissingNode || valueNode.isNull) {
+            throw IllegalArgumentException("Ticker '$currency2Ticker' not found in response")
         }
-        return value.toString()
+        return valueNode.decimalValue()
     }
 
-    @Bean
-    private fun getRestTemplate(): RestTemplate? = RestTemplate()
+    fun addVariable(name: String, value: Double) {
+        variables[name] = value
+    }
+
+    fun getVariable(name: String): Double? = variables[name]
 }

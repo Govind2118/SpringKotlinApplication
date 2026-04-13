@@ -1,7 +1,7 @@
 # SpringKotlinApplication
 
-A sample REST application coded in Kotlin using the Spring framework and coroutines for multithreading.
+A lightweight REST application coded in Kotlin using the Spring framework and coroutines for multithreading.
 
 Resources:
 
-CoinConversionResource - Provides an endpoint to get the value of one currency denomination in terms of another.
+CoinConversionResource - Provides an endpoint to get the value of one currency denomination in terms of another via Coingecko's API.
