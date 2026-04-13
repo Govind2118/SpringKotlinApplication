@@ -1,4 +1,4 @@
-# SpringKotlinApplication
+# coin-conversion-api
 
 A Kotlin + Spring WebFlux service that fetches cryptocurrency quotes from CoinGecko and exposes them through clean REST APIs.
 
